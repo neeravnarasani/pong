@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Bouncing Ball</title>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="400" height="400"></canvas>
+    <div>Score: <span id="score">0</span></div>
+    <script>
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      const ballRadius = 20;
+      let ballX = Math.random() * (canvas.width - 2 * ballRadius) + ballRadius;
+      let ballY = Math.random() * (canvas.height - 2 * ballRadius) + ballRadius;
+      const ballSpeed = 10;
+      let ballVelocityX = Math.random() * 2 - 1;
+      let ballVelocityY = Math.random() * 2 - 1;
+      let greenBarWidth = 80;
+      let greenBarHeight = 10;
+      let greenBarX = (canvas.width - greenBarWidth) / 2;
+      let greenBarY = canvas.height - greenBarHeight - 20;
+      const greenBarSpeed = 5;
+      let score = 0;
+      const scoreElement = document.getElementById("score");
+      const greenBarColor = "#00FF00";
+      let leftArrowPressed = false;
+      let rightArrowPressed = false;
+      let ballSpeedIncrease = 0.2;
+      let ballSpeedMax = 15;
+      let ballSpeedMin = 5;
+
+      function drawBall() {
+        ctx.beginPath();
+        ctx.fillStyle = "#FF0000";
+        ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      function drawBox() {
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      function drawGreenBar() {
+        ctx.fillStyle = greenBarColor;
+        ctx.fillRect(greenBarX, greenBarY, greenBarWidth, greenBarHeight);
+      }
+
+      function update() {
+        // Update ball position
+        ballX += ballSpeed * ballVelocityX;
+        ballY += ballSpeed * ballVelocityY;
+
+        // Check if ball hits the walls
+        if (ballX + ballRadius > canvas.width || ballX - ballRadius < 0) {
+          ballVelocityX = -ballVelocityX;
+        }
+        if (ballY - ballRadius < 0) {
+          ballVelocityY = -ballVelocityY;
+        }
+        if (ballY + ballRadius > canvas.height) {
+          // Stop the game if ball touches the bottom wall
+          return;
+        }
+
+        // Check if ball hits the green bar
+        if (ballY + ballRadius > greenBarY) {
+          if (ballX + ballRadius > greenBarX && ballX - ballRadius < greenBarX + greenBarWidth) {
+            ballVelocityY = -ballVelocityY;
+            // Calculate new direction of ball after hitting the bar
+            const distFromCenter = ballX - (greenBarX + greenBarWidth / 2);
+            const normalizedDist = distFromCenter / (greenBarWidth / 2);
+            ballVelocityX = normalizedDist;
+            score++;
+            scoreElement.textContent = score;
+            if (score % 10 === 0 && ballSpeed + ballSpeedIncrease <= ballSpeedMax) {
+              ballSpeed += ballSpeedIncrease;
+            }
+            // Add small random displacement to prevent ball from getting stuck in bar
+            ballX += Math.random() * 2 - 1;
+          }
+        }
+
+        // Move green bar
+        if (leftArrowPressed && greenBarX > 0) {
+          greenBarX -= greenBarSpeed;
+        }
+        if (rightArrowPressed && greenBarX + greenBarWidth < canvas.width) {
+          greenBarX += greenBarSpeed;
+        }
+
+        // Clear canvas and redraw everything
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBox();
+        drawBall();
+        drawGreenBar();
+        requestAnimationFrame(update);
+      }
+
+      document.addEventListener("keydown", function(event) {
+        if (event.code === "ArrowLeft") {
+          leftArrowPressed = true;
+        }
+        if (event.code === "ArrowRight") {
+          rightArrowPressed = true;
+        }
+      });
+
+      document.addEventListener("keyup", function(event) {
+        if (event.code === "ArrowLeft") {
+          leftArrowPressed = false;
+        }
+        if (event.code === "ArrowRight") {
+          rightArrowPressed =false;
+        }
+      });
+
+      // Start the game loop
+      requestAnimationFrame(update);
+    </script>
+  </body>
+</html>
